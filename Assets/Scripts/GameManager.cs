@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI winLoseText;
     public Button actionButton;
-    public Text actionButtonText;
+    public TextMeshProUGUI actionButtonText;
 
     public int totalPickUps = 12;
     public float timeLimit = 60f;
