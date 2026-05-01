@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI winLoseText;
     public Button actionButton;
+    public Button mainMenuButton;
     public TextMeshProUGUI actionButtonText;
 
     public int totalPickUps = 12;
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour
         timeRemaining = timeLimit;
         winLoseText.gameObject.SetActive(false);
         actionButton.gameObject.SetActive(false);
+        mainMenuButton.gameObject.SetActive(false);
         UpdateScoreUI();
     }
 
@@ -80,6 +82,7 @@ public class GameManager : MonoBehaviour
         StopAllMovement();
         winLoseText.gameObject.SetActive(true);
         actionButton.gameObject.SetActive(true);
+        mainMenuButton.gameObject.SetActive(true);
         winLoseText.text = "YOU WIN!";
         winLoseText.color = Color.green;
         actionButtonText.text = winButtonLabel;
@@ -93,6 +96,7 @@ public class GameManager : MonoBehaviour
         StopAllMovement();
         winLoseText.gameObject.SetActive(true);
         actionButton.gameObject.SetActive(true);
+        mainMenuButton.gameObject.SetActive(true);
         winLoseText.text = "YOU LOSE!";
         winLoseText.color = Color.red;
         actionButtonText.text = "Restart";
@@ -113,5 +117,10 @@ public class GameManager : MonoBehaviour
             SceneManager.LoadScene(nextSceneName);
         else
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }
