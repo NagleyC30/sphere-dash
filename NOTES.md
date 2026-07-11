@@ -27,6 +27,9 @@ Current state (baseline):
       position instead of chasing current position in `EnemyChase`).
 - [ ] Shrinking time limits and larger pickup counts as levels climb.
 - [ ] Moving hazards: spikes, sweeping walls, falling floors, lava tiles.
+- [x] Smarter chase — `EnemyChase` now leads the player (predicts where
+      they're heading via velocity, `leadFactor`) instead of chasing the current
+      position. Freeze/shield-aware.
 - [ ] Enemy variety: patrollers, ambushers, ones that split when close.
 - [ ] Optional "endless" / survival mode with escalating difficulty.
 - [ ] Per-level star rating (time remaining / no-damage) to reward mastery.
@@ -73,12 +76,15 @@ Current state (baseline):
       (`coinsPerPickup`, `winTimeBonusCoins` in GameManager). Coins persist.
 - [x] Level-unlock tracking (`UnlockLevel` / `IsLevelUnlocked`) — ready for a
       level-select screen to read.
-- [ ] Shop scene to spend coins on (spending API ready: `TrySpendCoins`):
-      - Sphere skins / colors / trails (cosmetic)
-      - Permanent upgrades (base speed, starting shield, longer power duration)
-      - Unlocking power-ups or new levels/maps
-- [ ] Remember purchases + equipped items across sessions.
-- [ ] High-score / best-time board per level, persisted.
+- [x] Shop (`Shop.cs`) that spends coins on items that apply in-game:
+      - [x] Sphere skins (cosmetic color, `PlayerLoadout` applies equipped color)
+      - [x] Permanent speed upgrade (stackable levels, `PlayerLoadout`)
+      - [x] "Start with a shield" one-off (honored in `PlayerAbilities.Start`)
+      - [ ] Trails / longer power durations / more skins (extend the item list)
+- [x] Remember purchases + equipped items across sessions (`SaveManager`:
+      `IsOwned`, `GetUpgradeLevel`, `EquippedColor`).
+- [ ] High-score / best-time board per level, persisted (data exists via
+      `GetBestScore` / `GetBestTime`; needs a UI to display it).
 
 ## 7. Polish & UX (supporting work)
 - [x] Pause menu script (`PauseMenu.cs`) — Esc to toggle, freezes via
@@ -135,6 +141,26 @@ These are coded and consume the audio/persistence layer; each needs a scene/UI:
 - Tuning lives on the components: `speedMultiplier`, `magnetRadius`,
   `magnetPullSpeed` on `PlayerAbilities`; `duration` / `timeBonusSeconds` per
   `PowerUp`. Current numbers are placeholders — balance to taste.
+
+### Shop (need a Shop scene + PlayerLoadout on the player)
+- Add **`PlayerLoadout`** to the player object (next to PlayerMovement /
+  PlayerAbilities). It applies the equipped skin color and speed upgrade at
+  level start; auto-finds the Renderer if you don't assign one.
+- Make a **Shop** scene (add it to Build Settings) with a `Shop` component.
+  Fill the `items` array — each entry: a stable `id`, `Kind` (Skin / Upgrade /
+  OneOff), `cost`, a Buy `Button`, and optional status label. For skins set
+  `skinColor`; for the start-shield use `Kind = OneOff` and `id = "startshield"`;
+  for the speed upgrade use `Kind = Upgrade` and `id = "speed"`.
+- Assign a coins label; add a Back button wired to `BackToMenu`, and a button on
+  MainMenu that loads the "Shop" scene.
+- Coins come from winning levels automatically — no setup needed to earn them.
+- Skin color uses `Material.color`, which maps to the URP/Lit main color. If a
+  skin doesn't visibly change, give the player a material whose shader exposes a
+  standard base color.
+
+### Smarter enemy (no setup — tune only)
+`EnemyChase` now leads the player. Tune `leadFactor` per enemy in the Inspector
+(0 = old dumb chase, ~0.5 default, higher = anticipates more aggressively).
 
 ## Suggested build order
 1. Sounds + AudioManager (fast, big feel improvement).

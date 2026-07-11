@@ -39,6 +39,10 @@ public class PlayerAbilities : MonoBehaviour
     {
         movement = GetComponent<PlayerMovement>();
         if (movement != null) baseSpeed = movement.speed;
+
+        // "Start shield" shop unlock: begin the level with one shield charge.
+        // No timer — it persists until an enemy hit consumes it (TryAbsorbHit).
+        if (SaveManager.IsOwned("startshield")) HasShield = true;
     }
 
     void Update()

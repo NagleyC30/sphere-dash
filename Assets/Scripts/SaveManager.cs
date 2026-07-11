@@ -99,6 +99,41 @@ public static class SaveManager
         }
     }
 
+    // ---- Shop: ownership (skins bought, one-off upgrades) ----
+    public static bool IsOwned(string id) => PlayerPrefs.GetInt("Owned_" + id, 0) == 1;
+
+    public static void SetOwned(string id)
+    {
+        PlayerPrefs.SetInt("Owned_" + id, 1);
+        PlayerPrefs.Save();
+    }
+
+    // ---- Shop: stackable upgrade levels (e.g. speed) ----
+    public static int GetUpgradeLevel(string id) => PlayerPrefs.GetInt("Upgrade_" + id, 0);
+
+    public static void IncrementUpgrade(string id)
+    {
+        PlayerPrefs.SetInt("Upgrade_" + id, GetUpgradeLevel(id) + 1);
+        PlayerPrefs.Save();
+    }
+
+    // ---- Shop: equipped cosmetic color (applied to the player sphere) ----
+    // Stored as RGB floats since PlayerPrefs can't hold a Color. Default white.
+    public static Color EquippedColor
+    {
+        get => new Color(
+            PlayerPrefs.GetFloat("SkinR", 1f),
+            PlayerPrefs.GetFloat("SkinG", 1f),
+            PlayerPrefs.GetFloat("SkinB", 1f));
+        set
+        {
+            PlayerPrefs.SetFloat("SkinR", value.r);
+            PlayerPrefs.SetFloat("SkinG", value.g);
+            PlayerPrefs.SetFloat("SkinB", value.b);
+            PlayerPrefs.Save();
+        }
+    }
+
     /// <summary>Wipes all saved data. Handy for a debug/reset button.</summary>
     public static void ResetAll()
     {
