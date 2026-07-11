@@ -18,6 +18,10 @@ public class EnemyChase : MonoBehaviour
     {
         if (player == null || GameManager.instance == null) return;
 
+        // Freeze power-up: stop chasing and can't catch while it's active.
+        if (PlayerAbilities.instance != null && PlayerAbilities.instance.EnemiesFrozen)
+            return;
+
         transform.position = Vector3.MoveTowards(
             transform.position,
             player.position,
@@ -25,6 +29,17 @@ public class EnemyChase : MonoBehaviour
         );
 
         if (Vector3.Distance(transform.position, player.position) < 1f)
+        {
+            // Shield power-up absorbs the hit; knock the enemy back so it doesn't
+            // instantly re-trigger the next frame.
+            if (PlayerAbilities.instance != null && PlayerAbilities.instance.TryAbsorbHit())
+            {
+                transform.position = Vector3.MoveTowards(
+                    transform.position, player.position, -3f);
+                return;
+            }
+
             GameManager.instance.TriggerLose();
+        }
     }
 }

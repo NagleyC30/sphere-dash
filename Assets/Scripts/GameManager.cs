@@ -96,6 +96,13 @@ public class GameManager : MonoBehaviour
         scoreText.text = "Score: " + score + " / " + totalPickUps;
     }
 
+    /// <summary>Adds seconds to the clock (used by the Time Bonus power-up).</summary>
+    public void AddTime(float seconds)
+    {
+        if (gameOver) return;
+        timeRemaining += seconds;
+    }
+
     void TriggerWin()
     {
         if (gameOver) return;

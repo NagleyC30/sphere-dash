@@ -52,16 +52,18 @@ Current state (baseline):
 - [ ] Use royalty-free / self-made audio; log attributions in README credits.
 
 ## 5. Power-Ups / Powers
-- [ ] In-level pickups that grant temporary abilities:
-      - Speed boost
-      - Slow-motion / freeze enemies
-      - Shield (survive one enemy hit)
-      - Time bonus (+seconds)
-      - Magnet (pull nearby cubes)
-      - Dash / short burst of speed
+- [x] In-level pickups that grant temporary abilities (`PowerUp.cs` +
+      `PlayerAbilities.cs`):
+      - [x] Speed boost (multiplies player speed)
+      - [x] Freeze enemies (they stop chasing + can't catch)
+      - [x] Shield (absorbs one enemy hit; timed)
+      - [x] Time bonus (+seconds on the clock)
+      - [x] Magnet (pulls nearby cubes toward the player → auto-collect)
+      - [ ] Dash / short burst of speed
 - [ ] Powers as an active ability the player triggers (cooldown), vs pickups.
-- [ ] Visual + audio feedback when active (particle trail, HUD icon, timer).
-- [ ] Balance so powers feel good but harder levels still matter.
+- [ ] Visual + audio feedback when active (particle trail, HUD icon, timer) —
+      pickup SFX plays; still needs visuals + a shield-break sound.
+- [ ] Balance pass (durations/multipliers are placeholder values).
 
 ## 6. Shop + Memory (Persistence)
 - [x] Persistent save system — `SaveManager.cs` wraps `PlayerPrefs` for coins,
@@ -121,6 +123,18 @@ These are coded and consume the audio/persistence layer; each needs a scene/UI:
 - **PauseMenu** (`PauseMenu.cs`) — add to a level, assign a hidden pause panel,
   wire its Resume/Restart/Main Menu buttons to the matching public methods.
   Esc toggles it. (It uses `Time.timeScale`, so it freezes the whole game.)
+
+### Power-ups (need a prefab + placement in levels)
+- Add `PlayerAbilities` to the **player** object (next to `PlayerMovement`).
+- Make a **power-up prefab**: a small object with a **trigger collider**, the
+  `PowerUp` component, and a `Type` chosen in the Inspector. Give it its own tag
+  (e.g. "PowerUp") or leave it untagged — but **never tag it "PickUp"** (that tag
+  is scored/collected by `PlayerMovement`).
+- Place power-up prefabs in a level, or spawn them (the `PickUpSpawner` pattern
+  works — point it at the power-up prefab in a second spawner object).
+- Tuning lives on the components: `speedMultiplier`, `magnetRadius`,
+  `magnetPullSpeed` on `PlayerAbilities`; `duration` / `timeBonusSeconds` per
+  `PowerUp`. Current numbers are placeholders — balance to taste.
 
 ## Suggested build order
 1. Sounds + AudioManager (fast, big feel improvement).
