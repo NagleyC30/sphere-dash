@@ -17,7 +17,9 @@ Current state (baseline):
 - [ ] Data-drive levels instead of copy-pasting scenes: a `LevelConfig`
       ScriptableObject (pickup count, enemy count, time limit, map ref) so a
       single "Gameplay" scene can load any level. Big refactor but scales well.
-- [ ] Track "levels unlocked" so progress is remembered (ties into §6 memory).
+- [x] Track "levels unlocked" so progress is remembered (`SaveManager`, §6).
+- [x] Level-select screen script (`LevelSelect.cs`) — gates buttons by unlock
+      progress, shows best score. Needs a scene + buttons wired in the editor.
 - [ ] End-of-game / victory scene after the final level (currently just Credits).
 
 ## 2. Harder Levels
@@ -44,7 +46,9 @@ Current state (baseline):
 - [x] Background music per scene (menu music + per-level music fields).
 - [ ] Assign actual audio clips in the Inspector (see "Editor setup" below).
 - [ ] Enemy-caught SFX (currently the lose sound covers this).
-- [ ] Options menu with Music / SFX volume sliders (persist via §6 — getters/setters ready).
+- [x] Options menu script with Music / SFX volume sliders (`OptionsMenu.cs`) —
+      persists via `SaveManager`, applies live to `AudioManager`. Needs sliders
+      wired in the editor.
 - [ ] Use royalty-free / self-made audio; log attributions in README credits.
 
 ## 5. Power-Ups / Powers
@@ -75,7 +79,8 @@ Current state (baseline):
 - [ ] High-score / best-time board per level, persisted.
 
 ## 7. Polish & UX (supporting work)
-- [ ] Pause menu (resume / restart / quit to menu).
+- [x] Pause menu script (`PauseMenu.cs`) — Esc to toggle, freezes via
+      Time.timeScale, Resume/Restart/Main Menu. Needs a pause panel wired in.
 - [ ] Particle + screen-shake feedback on collect / win / lose.
 - [ ] Countdown/urgency visuals when timer is low.
 - [ ] Settings menu (audio, difficulty default, maybe controls).
@@ -104,6 +109,18 @@ sound and finish wiring:
 Persistence is testable now (before any audio clips exist): win a level, then
 `SaveManager.Coins` / `GetBestScore` / `HighestLevelUnlocked` will be populated.
 `SaveManager.ResetAll()` wipes everything for a clean test.
+
+### Menu scripts (need UI wired in the editor)
+These are coded and consume the audio/persistence layer; each needs a scene/UI:
+- **OptionsMenu** (`OptionsMenu.cs`) — add to an options panel, assign the Music
+  and SFX `Slider`s (set their range to 0–1). Listeners are hooked in code.
+- **LevelSelect** (`LevelSelect.cs`) — new "LevelSelect" scene or panel. Fill the
+  `levels` array: one entry per level with its Button, level number (1-based),
+  and scene name (optional best-score TMP label). Locked levels auto-disable.
+  Add a button on MainMenu to open it.
+- **PauseMenu** (`PauseMenu.cs`) — add to a level, assign a hidden pause panel,
+  wire its Resume/Restart/Main Menu buttons to the matching public methods.
+  Esc toggles it. (It uses `Time.timeScale`, so it freezes the whole game.)
 
 ## Suggested build order
 1. Sounds + AudioManager (fast, big feel improvement).
