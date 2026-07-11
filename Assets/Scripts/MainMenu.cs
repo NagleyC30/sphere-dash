@@ -3,21 +3,23 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void StartEasy()
+    [Header("Audio")]
+    public AudioClip menuMusic;
+
+    void Start()
     {
-        PlayerPrefs.SetInt("Difficulty", 0);
-        SceneManager.LoadScene("Level1");
+        AudioManager.instance?.PlayMusic(menuMusic);
     }
 
-    public void StartMedium()
-    {
-        PlayerPrefs.SetInt("Difficulty", 1);
-        SceneManager.LoadScene("Level1");
-    }
+    public void StartEasy() => StartGame(0);
+    public void StartMedium() => StartGame(1);
+    public void StartHard() => StartGame(2);
 
-    public void StartHard()
+    void StartGame(int difficulty)
     {
-        PlayerPrefs.SetInt("Difficulty", 2);
+        PlayerPrefs.SetInt("Difficulty", difficulty);
+        PlayerPrefs.Save();
+        AudioManager.instance?.PlayButton();
         SceneManager.LoadScene("Level1");
     }
 }

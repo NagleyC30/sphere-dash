@@ -38,11 +38,13 @@ Current state (baseline):
 - [ ] Make `PickUpSpawner` respect map geometry (don't spawn inside walls/pits).
 
 ## 4. Sounds & Music
-- [ ] SFX: pickup collect, win, lose, enemy-caught, button clicks, countdown
-      tick in final seconds.
-- [ ] Background music per scene/theme (menu vs gameplay vs credits).
-- [ ] Central `AudioManager` (singleton) + volume handling.
-- [ ] Options menu with Music / SFX volume sliders (persist via §6).
+- [x] Central `AudioManager` (singleton, DontDestroyOnLoad) + volume handling. (`AudioManager.cs`)
+- [x] SFX hooks wired: pickup collect, win, lose, button clicks, countdown tick
+      in the final 5 seconds. (GameManager / MainMenu / Credits)
+- [x] Background music per scene (menu music + per-level music fields).
+- [ ] Assign actual audio clips in the Inspector (see "Editor setup" below).
+- [ ] Enemy-caught SFX (currently the lose sound covers this).
+- [ ] Options menu with Music / SFX volume sliders (persist via §6 — getters/setters ready).
 - [ ] Use royalty-free / self-made audio; log attributions in README credits.
 
 ## 5. Power-Ups / Powers
@@ -58,11 +60,14 @@ Current state (baseline):
 - [ ] Balance so powers feel good but harder levels still matter.
 
 ## 6. Shop + Memory (Persistence)
-- [ ] Currency: earn coins from pickups / level completion / leftover time.
-- [ ] Persistent save system — start with `PlayerPrefs` (coins, unlocks,
-      settings, high scores, levels completed). Move to a JSON save file if it
-      grows.
-- [ ] Shop scene to spend coins on:
+- [x] Persistent save system — `SaveManager.cs` wraps `PlayerPrefs` for coins,
+      level unlocks, audio settings, best score + best time per level. Single
+      swap-point if we move to a JSON file later.
+- [x] Currency earned on win: coins from pickups collected + leftover time
+      (`coinsPerPickup`, `winTimeBonusCoins` in GameManager). Coins persist.
+- [x] Level-unlock tracking (`UnlockLevel` / `IsLevelUnlocked`) — ready for a
+      level-select screen to read.
+- [ ] Shop scene to spend coins on (spending API ready: `TrySpendCoins`):
       - Sphere skins / colors / trails (cosmetic)
       - Permanent upgrades (base speed, starting shield, longer power duration)
       - Unlocking power-ups or new levels/maps
@@ -77,6 +82,28 @@ Current state (baseline):
 - [ ] Controller/gamepad support (already on new Input System).
 
 ---
+
+---
+
+## Editor setup for the audio/persistence work (do this in Unity)
+The code is in and null-safe (game runs with zero setup — just silent). To hear
+sound and finish wiring:
+
+1. **AudioManager object** — in the **MainMenu** scene, create an empty
+   GameObject named `AudioManager`, add the `AudioManager` component. It
+   survives scene loads (DontDestroyOnLoad), so it only needs to exist in the
+   first scene. Leave the two AudioSource fields empty and it auto-creates them,
+   or add two AudioSource components and assign them.
+2. **Assign SFX clips** on that component: Pickup, Win, Lose, Button,
+   CountdownTick. Any left empty simply won't play (no error).
+3. **Music (optional)** — set `Menu Music` on the MainMenu object's `MainMenu`
+   component, and `Level Music` on each level's `GameManager`.
+4. **Nothing else needed for saving** — coins, unlocks, best score/time, and
+   volume all persist automatically via `SaveManager`.
+
+Persistence is testable now (before any audio clips exist): win a level, then
+`SaveManager.Coins` / `GetBestScore` / `HighestLevelUnlocked` will be populated.
+`SaveManager.ResetAll()` wipes everything for a clean test.
 
 ## Suggested build order
 1. Sounds + AudioManager (fast, big feel improvement).

@@ -19,10 +19,19 @@ public class GameManager : MonoBehaviour
     public string nextSceneName = "Level2";
     public string winButtonLabel = "Next Level";
 
+    [Header("Progression / Rewards")]
+    public int nextLevelNumber = 2;   // level unlocked on win (1-based)
+    public int coinsPerPickup = 1;    // coins awarded per cube collected
+    public int winTimeBonusCoins = 1; // coins per second left on the clock at win
+
+    [Header("Audio")]
+    public AudioClip levelMusic;
+
     private int score = 0;
     private float timeRemaining;
     private bool gameOver = false;
     private bool playerWon = false;
+    private int lastWholeSecond = -1;
 
     void Awake()
     {
@@ -37,6 +46,8 @@ public class GameManager : MonoBehaviour
         actionButton.gameObject.SetActive(false);
         mainMenuButton.gameObject.SetActive(false);
         UpdateScoreUI();
+
+        AudioManager.instance?.PlayMusic(levelMusic);
     }
 
     void ApplyDifficulty()
@@ -52,7 +63,17 @@ public class GameManager : MonoBehaviour
         if (gameOver) return;
 
         timeRemaining -= Time.deltaTime;
-        timerText.text = "Time: " + Mathf.CeilToInt(timeRemaining).ToString();
+
+        int secondsLeft = Mathf.CeilToInt(timeRemaining);
+        timerText.text = "Time: " + secondsLeft.ToString();
+
+        // Tick on each new second during the final countdown.
+        if (secondsLeft != lastWholeSecond)
+        {
+            lastWholeSecond = secondsLeft;
+            if (secondsLeft > 0 && secondsLeft <= 5)
+                AudioManager.instance?.PlayCountdownTick();
+        }
 
         if (timeRemaining <= 0)
         {
@@ -65,6 +86,7 @@ public class GameManager : MonoBehaviour
     {
         score++;
         UpdateScoreUI();
+        AudioManager.instance?.PlayPickup();
         if (score >= totalPickUps)
             TriggerWin();
     }
@@ -80,12 +102,28 @@ public class GameManager : MonoBehaviour
         gameOver = true;
         playerWon = true;
         StopAllMovement();
+        SaveProgress();
         winLoseText.gameObject.SetActive(true);
         actionButton.gameObject.SetActive(true);
         mainMenuButton.gameObject.SetActive(true);
         winLoseText.text = "YOU WIN!";
         winLoseText.color = Color.green;
         actionButtonText.text = winButtonLabel;
+        AudioManager.instance?.PlayWin();
+    }
+
+    // Persist rewards + records for a successful run.
+    void SaveProgress()
+    {
+        string level = SceneManager.GetActiveScene().name;
+        SaveManager.SetBestScore(level, score);
+        SaveManager.SetBestTime(level, timeRemaining);
+
+        int coins = score * coinsPerPickup
+                    + Mathf.CeilToInt(timeRemaining) * winTimeBonusCoins;
+        SaveManager.AddCoins(coins);
+
+        SaveManager.UnlockLevel(nextLevelNumber);
     }
 
     public void TriggerLose()
@@ -100,6 +138,7 @@ public class GameManager : MonoBehaviour
         winLoseText.text = "YOU LOSE!";
         winLoseText.color = Color.red;
         actionButtonText.text = "Restart";
+        AudioManager.instance?.PlayLose();
     }
 
     void StopAllMovement()
@@ -113,6 +152,7 @@ public class GameManager : MonoBehaviour
 
     public void ActionButtonPressed()
     {
+        AudioManager.instance?.PlayButton();
         if (playerWon)
             SceneManager.LoadScene(nextSceneName);
         else
@@ -121,6 +161,7 @@ public class GameManager : MonoBehaviour
 
     public void ToMainMenu()
     {
+        AudioManager.instance?.PlayButton();
         SceneManager.LoadScene("MainMenu");
     }
 }
